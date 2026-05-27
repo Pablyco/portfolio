@@ -1,0 +1,39 @@
+---
+// Nada acá — Astro procesa el <Code> en build time
+import { Code } from 'astro:components';
+
+interface Props {
+  code: string;
+  lang?: string;
+  caption?: string;
+}
+const { code, lang = 'cpp', caption } = Astro.props;
+---
+
+<div class="codeblock">
+  {caption && <div class="code-caption">{caption}</div>}
+  <Code code={code} lang={lang as any} theme="one-dark-pro" />
+</div>
+
+<style>
+  .codeblock {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .code-caption {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  /* Shiki genera el <pre> — solo necesitás sobreescribir padding */
+  .codeblock :global(pre) {
+    padding: 16px !important;
+    font-size: 12px !important;
+    line-height: 1.7 !important;
+    overflow-x: auto;
+  }
+</style>
