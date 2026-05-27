@@ -6,4 +6,3 @@ Built with Astro 6, HTML, and CSS — minimal JS.
 **Live site:** [pablyco.github.io/portfolio](https://pablyco.github.io/portfolio)
  
 ---
- 
