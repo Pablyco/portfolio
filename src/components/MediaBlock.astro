@@ -1,7 +1,7 @@
 ---
 interface Props {
   src: string;
-  type?: 'video' | 'gif' | 'image';
+  type?: 'video' | 'gif' | 'image' | 'youtube';
   caption?: string;
   autoplay?: boolean;
 }
@@ -22,6 +22,17 @@ const { src, type = 'image', caption, autoplay = true } = Astro.props;
   {(type === 'gif' || type === 'image') && (
     <img src={src} alt={caption ?? ''} loading="lazy" decoding="async" />
   )}
+  {type === 'youtube' && (
+    <div class="video-wrapper">
+      <iframe
+        src={`https://www.youtube.com/embed/${src}`}
+        title={caption ?? 'YouTube video'}
+        frameborder="0"
+        allowfullscreen
+        loading="lazy"
+      />
+    </div>
+  )}
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
@@ -32,6 +43,18 @@ const { src, type = 'image', caption, autoplay = true } = Astro.props;
     border-radius: 6px;
     border: 1px solid var(--border);
     display: block;
+  }
+  .video-wrapper {
+    position: relative;
+    aspect-ratio: 16 / 9;
+  }
+  .video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--border);
   }
   figcaption {
     font-size: 12px;

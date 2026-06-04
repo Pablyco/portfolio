@@ -24,6 +24,46 @@ import '../styles/global.css';
     <h1>Projects:</h1>
 
     <ProjectEntry
+      title="ECS Project — Simple Entity Component System in C++"
+      year="present"
+      tags={["C++, low-level"]}
+      links={[{ label: "GitHub", href: "https://github.com/Pablyco/Simple-ECS"}]}
+    >
+
+     <p>ECS Project is a non production ready implementation of a Entity Component System in C++.
+        I built it to understand how ECS works internally, and what is below a game engine such as Unreal Engine 5.
+        The goal of this project was to understand ECS pattern and the potential of it. </p>
+
+        <MediaBlock
+      src={`${import.meta.env.BASE_URL}/media/ecs_drawing.png`}
+      type="image"
+      caption="The hat is a component!"
+      />
+
+      <p>
+        One of the things that caught my eye is the difference between OOP and ECS. 
+        I was used to thinking in classes with data and behavior bundled together, 
+        and of course using inheritance. 
+        ECS flips that: entities are just IDs, components are pure data, and systems are the logic.
+        I heared about "Composition over inheritance" but experiencing it in practice rather than just reading about it, hits different. 
+      </p>
+
+      <MediaBlock
+      src={`${import.meta.env.BASE_URL}/media/oop.png`}
+      type="image"
+      caption="OOP Example"
+      />
+
+      <MediaBlock
+      src={`${import.meta.env.BASE_URL}/media/ecs.png`}
+      type="image"
+      caption="ECS Example"
+      />
+
+    </ProjectEntry>
+
+
+    <ProjectEntry
       title="DynArray — Custom Dynamic Array in C++"
       year="present"
       tags={["C++, low-level"]}
@@ -106,13 +146,405 @@ The difference between copy and move is how they handle an object's resources.
       I created a simple implementation of <code>Linear Allocator/Bump Allocator</code> for learning propose.
       I plan to expand this project to include more allocators, such as <code>Pool Allocator</code> and <code>Stack Allocator</code>.
     </p>
-          <!-- Gameplay clip -->
+      
+    <h3>Bump/Linear Allocator</h3>
+    <CodeBlock
+          caption= "Allocate and Reset functions for Linear Allocator"
+          code=
+          {`void* Allocate(size_t Size) {
+        if(Offset + Size > Capacity)
+            return nullptr;
+
+        void* ptr = Buffer + Offset;
+
+        Offset += Size;
+
+        return ptr;
+    }
+
+    void Reset() {
+        Offset = 0;
+    }
+`}
+/>
+<p> Allocates Size bytes from the internal buffer.
+    Returns a pointer to the allocated memory, or nullptr if there is not enough remaining capacity.
+    The returned memory is valid until <code>Reset()</code> is called or
+    the allocator is destroyed.
+
+    <code>Reset()</code> resets the allocator to its initial state, allowing it to allocate memory again.
+    It just move the offset to the beginning of the buffer.
+</p>
+
       <MediaBlock
       src={`${import.meta.env.BASE_URL}/media/bumpallocator.png`}
       type="image"
       caption="Example of 'Bump Allocator' in action with memory view"
       />
 
+    </ProjectEntry>
+
+
+
+      <ProjectEntry
+      title="Dialog Component — Through His Eyes"
+      year="present"
+      tags={["C++, Unreal Engine 5, Blueprint, UI"]}
+      links={[{ label: "Steam", href: "https://store.steampowered.com/app/3520830/Through_His_Eyes/"}]}
+    >
+
+     <p>I created a <code>Dialog Component</code> that is simple and easy to use for designers, but also powerful and flexible. <br>
+      I used <code>C++</code> for dialog logic and I exposed some methods to designers using <code>Blueprints</code>.<br>
+
+      Designers can modify the dialogues through a <code>Data Asset</code> and play them using <code>Play Dialog By Name</code> function.<br>
+
+      I'll try to explain this system brifely...<br>
+     </p>
+
+
+            <CodeBlock
+          caption= "The main function: Play Dialog By Name function"
+          code=
+          {`
+          void UDialogComponent::PlayDialogByName(EDialogType DialogType,FName DialogName)
+{
+	if (DialogType == EDialogType::Default)
+	{
+		if (bCooldown)
+			return;
+
+		StartCooldown();
+	}
+	
+	ShowDialog(DialogType,DialogName);
+}
+`}
+
+/>
+
+<p>
+The function takes <code>DialogType</code> and <code>DialogName</code> as parameters. <br>
+The <code>DialogType</code> is used to determine whether the dialog is a main dialog or a normal dialog.<br>
+</p>
+
+<CodeBlock
+          caption= "Show Dialog"
+          code=
+          {`void UDialogComponent::ShowDialog(EDialogType DialogType, const FName& DialogName)
+{
+	if (IsMainDialog(DialogType))
+		ShowMainDialog(DialogName);
+	else
+		ShowNormalDialog(DialogName);
+}
+`}
+
+/>
+
+<p>
+  The function calls either <code>ShowMainDialog</code> or <code>ShowNormalDialog</code> depending on the <code>DialogType</code>.
+</p>
+<CodeBlock
+          caption= "Main Dialog"
+          code=
+          {`void UDialogComponent::ShowMainDialog(FName MainDialogName)
+{
+	if (!DialoguesData || MainDialogName.IsNone())
+		return;
+	
+	bDialogPlaying = true;
+  DialogWidget->AddDialogEntry(DialoguesData->GetDialog(MainDialogName),EDialogType::Main);
+}
+          
+`}
+/>
+
+<p>
+  The function adds the main dialog to the dialog widget. <br> 
+  The difference between <code>Main</code> and <code>Normal</code> dialog is: <br>
+  Normal dialog can be played multiple times but main dialog is played only ONCE for that reason is more important than normal dialog, 
+  if a normal dialog is playing and we try to play a main dialog it will display inmediately and stop the normal dialog.
+</p>
+
+<CodeBlock
+          caption= "Normal Dialog"
+          code=
+          {`void UDialogComponent::ShowNormalDialog(FName DialogName)
+{
+	if (!DialoguesData || DialogName.IsNone())
+		return;
+
+	if (IsDialogPlaying())
+		return;
+	
+	DialogWidget->AddDialogEntry(DialoguesData->GetDialog(DialogName), EDialogType::Default);
+	bDialogPlaying = true;
+}
+          
+`}
+/>
+<p>
+  The function adds the normal dialog to the dialog widget.
+  Also is important to know that normal dialog has a cooldown, so if a normal dialog is playing and we try to play another normal dialog
+  it wont display. The cooldown prevents spamming normal dialogues.
+</p>
+
+<MediaBlock
+      src="HoPX6EtFqqs"
+      type="youtube"
+      caption="Through His Eyes Demo Trailer"
+      />
+<p> You can see the dialogues in action in the trailer video :D </p>
+</ProjectEntry>
+
+<ProjectEntry
+  title="Workbench Combination System — Chester The Chest"
+  year="present"
+  tags={["C++", "Unreal Engine 5", "Blueprint", "UI", "Gameplay System"]}
+  links={[{ label: "Steam", href: "https://store.steampowered.com/app/2506390/Chester_The_Chest/"}]}
+>
+  <p>
+    I created a <code>Workbench Combination System</code> that allows the player to combine collected fragments 
+    and unlock new collectible items. <br />
+    The core logic is written in <code>C++</code>, while feedback animations, presentation events, and UI moments 
+    are exposed to <code>Blueprints</code> so they can be easily adjusted in the editor. <br />
+    <br />
+    The system checks if the player has enough fragments, selects a valid item category, spends the required fragments, 
+    and then plays a short reward presentation sequence.
+  </p>
+
+  <CodeBlock
+    caption="Checking if a combination is available"
+    code=
+{`
+bool AWorkbenchActor::HasCombinationAvailable()
+{
+	RefreshFragmentCounts();
+	return GetValidCombinationTypes().Num() > 0;
+}
+`}
+/>
+
+  <p>
+    This function refreshes the current fragment amount from the game instance and checks if there is at least 
+    one valid item type that can be crafted. <br />
+    If a valid combination exists, the workbench changes to a ready state and shows feedback to the player.
+  </p>
+
+  <CodeBlock
+    caption="Getting valid combination types"
+    code=
+{`
+TArray<EItemType> AWorkbenchActor::GetValidCombinationTypes() const
+{
+	TArray<EItemType> ValidTypes;
+
+	for (const auto& Pair : FragmentCounts)
+	{
+		const EItemType ItemType = Pair.Key;
+		const int Count = Pair.Value;
+
+		if (Count >= FragmentNeeded && HasRemainingItemsOfType(ItemType))
+		{
+			ValidTypes.Add(ItemType);
+		}
+	}
+
+	return ValidTypes;
+}
+`}
+/>
+
+  <p>
+    The system loops through the player's fragment inventory and finds which item categories can be used. <br />
+    A category is valid only if the player has enough fragments and there are still uncollected rewards available 
+    for that type.
+  </p>
+
+  <CodeBlock
+    caption="Trying to combine fragments"
+    code=
+{`
+void AWorkbenchActor::TryToCombineFragments()
+{
+	WorkbenchState = EWorkbenchState::Combining;
+	
+	RefreshFragmentCounts();
+
+	EItemType SelectedItemType;
+	if (!PickRandomCombinationType(SelectedItemType))
+	{
+		CheckForCombinations();
+		ShowCollectionCategoryCompleteFeedback();
+		UnlockPlayer();
+		return;
+	}
+
+	if (!ChesterGameInstance || !ChesterGameInstance->SpendFragments(SelectedItemType, FragmentNeeded))
+	{
+		CheckForCombinations();
+		UnlockPlayer();
+		return;
+	}
+
+	CommitCombination(SelectedItemType);
+}
+`}
+/>
+
+  <p>
+    This is the main crafting flow. <br />
+    The workbench selects a valid item type, spends the required fragments, and then commits the reward. 
+    If no item can be created, the system safely restores the player state and updates the workbench feedback.
+  </p>
+
+  <CodeBlock
+    caption="Creating the reward"
+    code=
+{`
+void AWorkbenchActor::CommitCombination(EItemType ItemType)
+{
+	PendingRewardName = ChesterGameInstance->GetRandomRemainingItem(ItemType);
+	
+	if (PendingRewardName.IsNone())
+	{
+		CheckForCombinations();
+		ShowCollectionCategoryCompleteFeedback();
+		UnlockPlayer();
+		return;
+	}
+	
+	ChesterGameInstance->CollectItem(PendingRewardName, ItemType);
+	SetupRewardUI();
+	PlayCombinationPresentation();
+}
+`}
+/>
+
+  <p>
+    After a valid item type is selected, the system chooses a random remaining reward from that category. <br />
+    The reward is registered in the player's collection, the reward UI is prepared, and a Blueprint presentation event 
+    is triggered so the animation can be handled visually.
+  </p>
+
+  <CodeBlock
+    caption="World space widget looking at the camera"
+    code=
+{`
+void AWorkbenchActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!CombiationAvailableWidget)
+	{
+		return;
+	}
+
+	const APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	if (!CameraManager)
+	{
+		return;
+	}
+
+	const FVector WidgetLocation = CombiationAvailableWidget->GetComponentLocation();
+	const FVector CameraLocation = CameraManager->GetCameraLocation();
+
+	const FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(WidgetLocation, CameraLocation);
+	CombiationAvailableWidget->SetWorldRotation(LookAtRotation);
+}
+`}
+/>
+
+  <p>
+    The workbench also uses a <code>World Space Widget</code> to show feedback in the level. <br />
+    Since the widget exists in 3D space, it updates its rotation every frame to face the player camera, making it readable 
+    from the gameplay view.
+  </p>
+
+  <CodeBlock
+    caption="Blueprint presentation event"
+    code=
+{`
+UFUNCTION(BlueprintImplementableEvent)
+void PlayCombinationPresentation();
+`}
+/>
+
+  <p>
+    I exposed the reward presentation as a <code>BlueprintImplementableEvent</code>. <br />
+    This lets me keep the gameplay rules in C++, while the visual animation and timing can be created directly in Blueprint.
+  </p>
+</ProjectEntry>
+
+  </section>
+
+  <section>
+    <h1>Games:</h1>
+
+         <ProjectEntry
+      title="Through His Eyes"
+      year="Current"
+      tags={["C++, Unreal Engine 5, Blueprints"]}
+      links={[{ label: "Steam", href: "https://store.steampowered.com/app/3520830/Through_His_Eyes/"}]}
+    >
+    <MediaBlock
+      src="HoPX6EtFqqs"
+      type="youtube"
+      caption="Through His Eyes Demo Trailer"
+      />
+    
+      
+      <p>
+        Through His Eyes is my latest game, a horror game with lot of puzzles, character inmersion and simple but robust dialog system.
+        I created systems that are simple and easy to use for designers, but also powerful and flexible.
+        I used <code>C++</code> for game logic and <code>Blueprints</code> for effects, animation, etc.
+      </p>
+      <MediaBlock
+      src={`${import.meta.env.BASE_URL}/media/the.png`}
+      type="image"
+      caption="Through His Eyes capsule"
+      />
+
+      <MediaBlock
+      src={`${import.meta.env.BASE_URL}/media/the_screenshot.png`}
+      type="image"
+      caption="Through His Eyes: TV Screenshot"
+      />
+
+    <iframe src="https://store.steampowered.com/widget/3520830/" frameborder="0" width="646" height="190"></iframe>
+
+    </ProjectEntry>
+    <ProjectEntry
+      title="Chester The Chest"
+      year="release 2024"
+      tags={["C++, Unreal Engine 5, Blueprints"]}
+      links={[{ label: "Steam", href: "https://store.steampowered.com/app/2506390/Chester_The_Chest/"}]}
+    >
+    <MediaBlock
+      src="LaB5RDG8Dlo"
+      type="youtube"
+      caption="Chester The Chest Release Trailer"
+      />
+          
+      <p>
+        Chester The Chest is my first comercial game as solo game dev,until this game I just made a few games in game jams. 
+        
+        I used to build everything in <code>Blueprints</code> of course was a bad idea, nowadays game logic is in <code>C++</code>
+      </p>
+      <MediaBlock
+      src={`${import.meta.env.BASE_URL}/media/ctc.png`}
+      type="image"
+      caption="Chester The Chest capsule"
+      />
+
+                <MediaBlock
+      src={`${import.meta.env.BASE_URL}/media/ctc_screenshot.png`}
+      type="image"
+      caption="Chester The Chest: Snow Level"
+      />
+    
+    <iframe src="https://store.steampowered.com/widget/2506390/" frameborder="0" width="646" height="190"></iframe>
+</ProjectEntry>
   </section>
 </body>
 </html>
